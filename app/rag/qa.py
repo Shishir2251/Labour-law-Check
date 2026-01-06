@@ -1,6 +1,9 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.chains import RetrievalQA
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+
 from app.rag.retriever import get_retriever
+
 
 def answer_question(question: str):
     retriever = get_retriever()
@@ -10,21 +13,32 @@ def answer_question(question: str):
         temperature=0.2
     )
 
-    system_prompt = """
-    You are a legal AI assistant specialized in Bangladesh Labour Law.
-    Answer strictly based on the provided legal context.
-    If the information is not found in the law, say clearly that it is not specified.
-    """
+    prompt = ChatPromptTemplate.from_template(
+        """
+        You are a legal AI assistant specialized in Bangladesh Labour Law.
+        Answer ONLY using the context provided.
+        If the answer is not found in the law, say clearly:
+        "This information is not specified in Bangladesh Labour Law."
 
-    qa = RetrievalQA.from_chain_type(
-        llm=llm,
-        retriever=retriever,
-        chain_type="stuff",
-        return_source_documents=True,
-        chain_type_kwargs={
-            "prompt": None
-        }
+        Context:
+        {context}
+
+        Question:
+        {question}
+        """
     )
 
-    result = qa.invoke({"query": question})
-    return result
+    rag_chain = (
+        {
+            "context": retriever,
+            "question": RunnablePassthrough()
+        }
+        | prompt
+        | llm
+    )
+
+    response = rag_chain.invoke(question)
+
+    return {
+        "answer": response.content
+    }

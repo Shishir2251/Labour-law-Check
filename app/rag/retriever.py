@@ -1,12 +1,13 @@
-from langchain_community.vectorstores import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from pathlib import Path
+from langchain.vectorstores import FAISS
+from langchain.embeddings import GooglePalmEmbeddings
+from app.core import config
 
-VECTOR_PATH = "data/vectorstore"
+VECTORSTORE_DIR = Path(__file__).resolve().parents[2] / "data" / "vectorstore"
+INDEX_NAME = "labour_law_index"
 
 def get_retriever():
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/text-embedding-004"
-    )
-
-    db = FAISS.load_local(VECTOR_PATH, embeddings)
-    return db.as_retriever(search_kwargs={"k": 4})
+    embeddings = GooglePalmEmbeddings(api_key=config.GOOGLE_API_KEY)
+    db = FAISS.load_local(str(VECTORSTORE_DIR / INDEX_NAME), embeddings)
+    retriever = db.as_retriever(search_kwargs={"k": 3})
+    return retriever

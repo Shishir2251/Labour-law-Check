@@ -1,23 +1,49 @@
-import os 
-from langchain_community.vectorsstore import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from app.utils.loaders import load_document
-from app.utils.text_splitter import split_documents
+import os
+from pathlib import Path
 
-VECTOR_PATH ="data/vectorstore"
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.document_loaders import PyPDFLoader
+from langchain.vectorstores import FAISS
+from langchain.embeddings import GooglePalmEmbeddings  # Gemini embeddings
 
-def ingest_documents(file_paths: str):
-    documents = load_document(file_path)
-    chunks = split_documents(documents)
+from app.core import config  # Make sure config.py loads .env
 
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/text-embedding-004"
+# Paths
+DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+RAW_DIR = DATA_DIR / "raw"
+VECTORSTORE_DIR = DATA_DIR / "vectorstore"
+VECTORSTORE_DIR.mkdir(parents=True, exist_ok=True)
+
+INDEX_NAME = "labour_law_index"
+
+def load_pdfs(pdf_folder: Path):
+    docs = []
+    for pdf_file in pdf_folder.glob("*.pdf"):
+        loader = PyPDFLoader(str(pdf_file))
+        docs.extend(loader.load())
+    print(f"📄 Loaded {len(docs)} documents from {pdf_folder}")
+    return docs
+
+def split_docs(docs):
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=100
     )
+    return splitter.split_documents(docs)
 
-    if os.path.exists(VECTOR_PATH):
-        db = FAISS.load_local(VECTOR_PATH, embeddings)
-        db.add_documents(chunks)
-    else:
-        db = FAISS.from_documents(chunks, embeddings)
+def create_vectorstore(docs):
+    # Initialize embeddings
+    embeddings = GooglePalmEmbeddings(api_key=config.GOOGLE_API_KEY)
+    
+    # Build FAISS index
+    vectorstore = FAISS.from_documents(docs, embeddings)
+    
+    # Save locally
+    vectorstore.save_local(str(VECTORSTORE_DIR / INDEX_NAME))
+    print(f"💾 Vectorstore saved to {VECTORSTORE_DIR}")
+    return vectorstore
 
-    db.save_local(VECTOR_PATH)
+if __name__ == "__main__":
+    raw_docs = load_pdfs(RAW_DIR)
+    chunks = split_docs(raw_docs)
+    create_vectorstore(chunks)
