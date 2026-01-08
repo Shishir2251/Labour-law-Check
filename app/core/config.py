@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 
 # Load .env from project root
 load_dotenv()
-
+VECTORSTORE_PATH=r'data\vectorstore'
+os.makedirs(VECTORSTORE_PATH, exist_ok=True)
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 if not GOOGLE_API_KEY:

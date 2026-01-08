@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import PyPDFLoader
-from langchain.vectorstores import FAISS
-from langchain.embeddings import GooglePalmEmbeddings  # Gemini embeddings
+from langchain_classic.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.vectorstores import FAISS
+# from langchain.embeddings import GooglePalmEmbeddings  # Gemini embeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from app.core import config  # Make sure config.py loads .env
 
@@ -33,7 +34,11 @@ def split_docs(docs):
 
 def create_vectorstore(docs):
     # Initialize embeddings
-    embeddings = GooglePalmEmbeddings(api_key=config.GOOGLE_API_KEY)
+    embeddings = GoogleGenerativeAIEmbeddings(
+    model="models/embedding-001",
+    api_key=config.GOOGLE_API_KEY
+)
+
     
     # Build FAISS index
     vectorstore = FAISS.from_documents(docs, embeddings)
