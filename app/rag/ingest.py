@@ -22,7 +22,7 @@ def load_pdfs(pdf_folder: Path):
     for pdf_file in pdf_folder.glob("*.pdf"):
         loader = PyPDFLoader(str(pdf_file))
         docs.extend(loader.load())
-    print(f"📄 Loaded {len(docs)} documents from {pdf_folder}")
+    print(f" Loaded {len(docs)} documents from {pdf_folder}")
     return docs
 
 def split_docs(docs):
@@ -45,7 +45,7 @@ def create_vectorstore(docs):
     
     # Save locally
     vectorstore.save_local(str(VECTORSTORE_DIR / INDEX_NAME))
-    print(f"💾 Vectorstore saved to {VECTORSTORE_DIR}")
+    print(f" Vectorstore saved to {VECTORSTORE_DIR}")
     return vectorstore
 
 if __name__ == "__main__":

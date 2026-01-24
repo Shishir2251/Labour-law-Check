@@ -9,3 +9,5 @@ pypdf
 python-docx
 tiktoken
 python-dotenv
+faiss-cpu  
+huggingface-hub
