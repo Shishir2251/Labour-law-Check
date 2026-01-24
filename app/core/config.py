@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 VECTORSTORE_PATH=r'data\vectorstore'
 os.makedirs(VECTORSTORE_PATH, exist_ok=True)
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
-if not GOOGLE_API_KEY:
-    raise RuntimeError("GOOGLE_API_KEY not found in environment")
+if not HUGGINGFACEHUB_API_TOKEN:
+    raise RuntimeError("HUGGINGFACEHUB_API_TOKEN not found in environment")
