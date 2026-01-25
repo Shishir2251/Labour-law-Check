@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from app.rag.qa import answer_question
 
-app = FastAPI(title="Bangladesh Labour Law AI (Gemini)")
+app = FastAPI(title="Bangladesh Labour Law AI")
 
 class Query(BaseModel):
     question: str
